@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <title>Мини слот-машина</title>
+  <title>Lucky Reels — шуточное казино</title>
   <style>
     :root {
       --bg: #0c0a12;
@@ -16,16 +16,22 @@
       --text: #f4efe6;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
       min-height: 100vh;
+      min-height: 100dvh;
       display: grid;
       place-items: center;
-      background: radial-gradient(ellipse at 50% 0%, #2a1c3a 0%, transparent 55%), var(--bg);
+      background:
+        radial-gradient(ellipse at 50% 0%, #3a1848 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, #1a0a28 0%, transparent 40%),
+        var(--bg);
       font-family: "Segoe UI", system-ui, sans-serif;
       color: var(--text);
       overflow-x: hidden;
+      padding: 10px 0 16px;
     }
-    body.jackpot-shake { animation: screenShake 0.12s linear infinite; }
+    body.jackpot-shake { animation: screenShake 0.11s linear infinite; }
     @keyframes screenShake {
       0% { transform: translate(0,0) rotate(0); }
       20% { transform: translate(-10px,6px) rotate(-1deg); }
@@ -35,14 +41,19 @@
       100% { transform: translate(0,0) rotate(0); }
     }
     .slot-block {
-      width: min(440px, 94vw);
-      background: linear-gradient(180deg, #1e1730 0%, var(--panel) 100%);
+      width: min(520px, 96vw);
+      background: linear-gradient(180deg, #241832 0%, var(--panel) 100%);
       border: 1px solid #3a2f4f;
       border-radius: 22px;
-      padding: 22px 20px 18px;
+      padding: 16px 14px 14px;
       box-shadow: 0 0 0 1px rgba(232,195,106,0.12), 0 24px 50px rgba(0,0,0,0.45);
       position: relative;
       z-index: 2;
+      transition: width .35s ease, box-shadow .2s;
+    }
+    .slot-block.fs-mode {
+      width: min(720px, 98vw);
+      box-shadow: 0 0 0 2px #7a2cff, 0 0 40px rgba(122,44,255,.35), 0 24px 50px rgba(0,0,0,0.45);
     }
     .slot-block.win-pulse {
       animation: blockPulse 0.18s linear infinite;
@@ -53,89 +64,157 @@
       50% { filter: hue-rotate(180deg) saturate(2); }
       100% { filter: hue-rotate(360deg) saturate(1.4); }
     }
-    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; }
     .title { font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); font-weight:700; }
-    .stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
-    .stat { background:#221a32; border:1px solid #3d3354; border-radius:12px; padding:8px 10px; }
-    .stat span { display:block; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#8f86a3; margin-bottom:4px; }
-    .stat b { font-variant-numeric: tabular-nums; font-size:16px; }
+    .header-right { display:flex; gap:6px; align-items:center; }
+    .icon-btn {
+      appearance:none; border:1px solid #5a4a28; background:#2a2038; color:var(--gold);
+      border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer;
+    }
+    .fs-badge {
+      display:none; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+      background:linear-gradient(90deg,#5b1cff,#ff2bd6); color:#fff; padding:5px 8px;
+      border-radius:999px; font-weight:800;
+    }
+    .fs-mode .fs-badge { display:inline-block; animation: pulseFs 1s ease-in-out infinite; }
+    @keyframes pulseFs { 50% { transform: scale(1.06); } }
+    .stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-bottom:12px; }
+    .stat { background:#221a32; border:1px solid #3d3354; border-radius:12px; padding:7px 8px; }
+    .stat span { display:block; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#8f86a3; margin-bottom:3px; }
+    .stat b { font-variant-numeric: tabular-nums; font-size:15px; }
     .stat.spent b { color: var(--lose); }
     .stat.earned b { color: var(--win); }
-    .machine { background:#0a0810; border-radius:16px; padding:16px 12px 12px; border:1px solid #2c243d; position:relative; overflow:hidden; }
-    .machine::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg, rgba(255,255,255,0.06), transparent 30%, transparent 70%, rgba(0,0,0,0.35)); }
-    .reels { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-    .reel { height:118px; background:linear-gradient(180deg,#1a1426,#100c18); border-radius:12px; overflow:hidden; border:1px solid #3a3150; }
+    .stat.fs b { color: #c9a6ff; }
+    .machine { background:#0a0810; border-radius:16px; padding:12px 8px 10px; border:1px solid #2c243d; position:relative; overflow:hidden; }
+    .machine::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(180deg, rgba(255,255,255,0.06), transparent 30%, transparent 70%, rgba(0,0,0,0.35)); z-index:1; }
+    .reels { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+    .fs-mode .reels { grid-template-columns:repeat(6,1fr); gap:4px; }
+    .reel { height:108px; background:linear-gradient(180deg,#1a1426,#100c18); border-radius:10px; overflow:hidden; border:1px solid #3a3150; }
+    .fs-mode .reel { height:260px; border-radius:8px; }
     .reel-window { height:100%; overflow:hidden; }
     .strip { display:flex; flex-direction:column; will-change:transform; }
-    .symbol { height:118px; display:grid; place-items:center; font-size:54px; line-height:1; user-select:none; }
-    .lights { display:flex; justify-content:center; gap:6px; margin:12px 0 4px; }
+    .symbol { height:108px; display:grid; place-items:center; font-size:50px; line-height:1; user-select:none; }
+    .fs-mode .symbol { height:52px; font-size:28px; }
+    .lights { display:flex; justify-content:center; gap:5px; margin:10px 0 2px; flex-wrap:wrap; }
     .dot { width:7px; height:7px; border-radius:50%; background:#3a3148; }
     .dot.on { background:var(--gold); box-shadow:0 0 8px var(--gold); }
-    .controls { display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:14px; align-items:center; }
-    .status { min-height:42px; display:flex; align-items:center; font-size:14px; color:#c9c0d8; }
+    .paylines {
+      text-align:center; font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+      color:#7d7393; margin-top:6px; min-height:14px;
+    }
+    .fs-mode .paylines { color:#e8c36a; }
+    .controls { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:12px; align-items:center; }
+    .status { min-height:40px; display:flex; align-items:center; font-size:13px; color:#c9c0d8; line-height:1.25; }
     .status.win { color:var(--win); font-weight:700; }
     .status.lose { color:#d7cfe4; }
-    button.spin, button.refill {
-      appearance:none; border:0; cursor:pointer; font-weight:800; letter-spacing:.08em;
-      text-transform:uppercase; padding:12px 18px; border-radius:12px;
+    .btns { display:flex; flex-direction:column; gap:6px; }
+    button.spin, button.refill, button.cashout {
+      appearance:none; border:0; cursor:pointer; font-weight:800; letter-spacing:.06em;
+      text-transform:uppercase; padding:11px 14px; border-radius:12px; font-size:12px; white-space:nowrap;
     }
-    button.spin { background:linear-gradient(180deg,#f0d48a,var(--gold-dim)); color:#1a1208; box-shadow:0 8px 0 #7a5c1d; }
-    button.spin:disabled { cursor:not-allowed; filter:grayscale(.3) brightness(.85); }
+    button.spin { background:linear-gradient(180deg,#f0d48a,var(--gold-dim)); color:#1a1208; box-shadow:0 6px 0 #7a5c1d; }
+    button.spin:disabled { cursor:not-allowed; filter:grayscale(.3) brightness(.85); box-shadow:0 4px 0 #4a3a16; }
     button.refill { display:none; background:#2a2038; color:var(--gold); border:1px solid #5a4a28; }
+    button.cashout { background:#1c1220; color:#ff8aa0; border:1px solid #5a2838; }
     .broke .spin { display:none; }
     .broke .refill { display:inline-block; }
-    .hint { margin-top:10px; font-size:11px; color:#8b829a; text-align:center; }
+    .hint { margin-top:8px; font-size:11px; color:#8b829a; text-align:center; line-height:1.35; }
     .overlay { position:fixed; inset:0; display:none; place-items:center; z-index:20; pointer-events:none; }
     .overlay.show { display:grid; }
     .you-win {
-      font-size: clamp(48px, 12vw, 110px); font-weight:900; letter-spacing:.04em;
-      text-transform:uppercase; color:#fff; text-align:center; line-height:.9;
+      font-size: clamp(36px, 11vw, 96px); font-weight:900; letter-spacing:.04em;
+      text-transform:uppercase; color:#fff; text-align:center; line-height:.92;
       text-shadow: 0 0 12px #ff0, 0 0 30px #ff2bd6, 0 0 60px #00e5ff, 4px 4px 0 #000;
       animation: winPop .18s linear infinite, hue .4s linear infinite;
+      padding: 0 12px;
     }
-    .you-win small { display:block; font-size:.28em; margin-top:12px; letter-spacing:.12em; }
+    .you-win small { display:block; font-size:.26em; margin-top:10px; letter-spacing:.1em; }
     @keyframes winPop {
       0% { transform:scale(1) rotate(-4deg); }
-      50% { transform:scale(1.18) rotate(4deg); }
+      50% { transform:scale(1.16) rotate(4deg); }
       100% { transform:scale(1) rotate(-4deg); }
     }
     @keyframes hue { from { filter:hue-rotate(0); } to { filter:hue-rotate(360deg); } }
-    .flash { position:fixed; inset:0; display:none; z-index:10; pointer-events:none; animation:flashBg .12s linear infinite; }
+    .flash { position:fixed; inset:0; display:none; z-index:10; pointer-events:none; animation:flashBg .1s linear infinite; }
     .flash.show { display:block; }
     @keyframes flashBg {
-      0% { background:rgba(255,0,200,.35); }
-      25% { background:rgba(255,230,0,.4); }
-      50% { background:rgba(0,255,200,.35); }
-      75% { background:rgba(80,80,255,.4); }
-      100% { background:rgba(255,255,255,.45); }
+      0% { background:rgba(255,0,200,.38); }
+      25% { background:rgba(255,230,0,.42); }
+      50% { background:rgba(0,255,200,.36); }
+      75% { background:rgba(80,80,255,.42); }
+      100% { background:rgba(255,255,255,.48); }
+    }
+    .modal {
+      position:fixed; inset:0; display:none; place-items:center; z-index:40;
+      background:rgba(0,0,0,.72); padding:18px;
+    }
+    .modal.show { display:grid; }
+    .modal-card {
+      width:min(420px,94vw); background:#1a1426; border:1px solid #5a2838;
+      border-radius:18px; padding:22px 18px; text-align:center;
+      box-shadow:0 0 0 2px #ff5c7a, 0 20px 60px rgba(0,0,0,.6);
+    }
+    .modal-card h2 { color:#ff5c7a; font-size:18px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:12px; }
+    .modal-card p { font-size:16px; line-height:1.45; color:#f4efe6; margin-bottom:16px; }
+    .modal-card .tiny { font-size:11px; color:#8b829a; margin-bottom:14px; }
+    .modal-card button {
+      appearance:none; border:0; background:linear-gradient(180deg,#f0d48a,var(--gold-dim));
+      color:#1a1208; font-weight:800; text-transform:uppercase; letter-spacing:.08em;
+      padding:11px 16px; border-radius:12px; cursor:pointer;
+    }
+    .coins-rain {
+      position:fixed; inset:0; pointer-events:none; z-index:15; overflow:hidden; display:none;
+    }
+    .coins-rain.show { display:block; }
+    .coin-drop {
+      position:absolute; top:-40px; font-size:22px; animation: fall linear forwards;
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh) rotate(540deg); opacity:.2; }
     }
   </style>
 </head>
 <body>
   <div class="flash" id="flash"></div>
+  <div class="coins-rain" id="coinsRain"></div>
   <div class="overlay" id="overlay">
-    <div class="you-win">YOU WIN!!!<small id="winAmount"></small></div>
+    <div class="you-win" id="winTitle">YOU WIN!!!<small id="winAmount"></small></div>
+  </div>
+  <div class="modal" id="cashModal">
+    <div class="modal-card">
+      <h2>Заявка на вывод</h2>
+      <p id="cashText"></p>
+      <div class="tiny" id="cashSub"></div>
+      <button type="button" id="cashOk">Продолжить проигрывать</button>
+    </div>
   </div>
   <section class="slot-block" id="block">
-    <div class="header"><div class="title">Lucky Reels</div></div>
+    <div class="header">
+      <div class="title">Lucky Reels</div>
+      <div class="header-right">
+        <span class="fs-badge" id="fsBadge">Фриспины 0</span>
+        <button class="icon-btn" id="muteBtn" type="button">🔊 звук</button>
+      </div>
+    </div>
     <div class="stats">
       <div class="stat spent"><span>Потрачено</span><b id="spent">0</b></div>
       <div class="stat earned"><span>Заработано</span><b id="earned">0</b></div>
+      <div class="stat fs"><span>Фриспины</span><b id="fsLeft">0</b></div>
     </div>
     <div class="machine">
-      <div class="reels">
-        <div class="reel"><div class="reel-window"><div class="strip" id="reel0"></div></div></div>
-        <div class="reel"><div class="reel-window"><div class="strip" id="reel1"></div></div></div>
-        <div class="reel"><div class="reel-window"><div class="strip" id="reel2"></div></div></div>
-      </div>
+      <div class="reels" id="reelsWrap"></div>
       <div class="lights" id="lights"></div>
+      <div class="paylines" id="paylines">3 барабана · ставка 10</div>
     </div>
     <div class="controls">
-      <div class="status" id="status">Ставка 10 · джекпот до ×1 000 000 000</div>
-      <button class="spin" id="spinBtn" type="button">Крутить</button>
-      <button class="refill" id="refillBtn" type="button">Пополнить +100</button>
+      <div class="status" id="status">Ставка 10 · 3 в ряд = 10 фриспинов 6×5</div>
+      <div class="btns">
+        <button class="spin" id="spinBtn" type="button">Крутить</button>
+        <button class="refill" id="refillBtn" type="button">Пополнить +100</button>
+        <button class="cashout" id="cashoutBtn" type="button">Вывести</button>
+      </div>
     </div>
-    <p class="hint">Баланс для ставки: <b id="coins">100</b> · 7-7-7 мегаджекпот · одинаковые чаще</p>
+    <p class="hint">Баланс: <b id="coins">100</b> · 🃏 вайлд · 💀 чёрный джокер · 7️⃣7️⃣7️⃣ мегаджекпот<br>3 одинаковых на обычном поле = 10 автофриспинов · во фриспинах +1…3 только за горизонталь 7️⃣ или 💀</p>
   </section>
   <script>
     const tg = window.Telegram && window.Telegram.WebApp;
@@ -145,161 +224,738 @@
       try { tg.setHeaderColor("#0c0a12"); tg.setBackgroundColor("#0c0a12"); } catch (e) {}
     }
 
-    const SYMBOLS = ["🍒","🍋","🍊","🍇","⭐","7️⃣"];
-    const BET = 10, REEL_SIZE = 24, START_COINS = 100;
+    const BASE_SYMBOLS = ["🍒","🍋","🍊","🍇","🍉","⭐","💎","🔔","🍀","💀","7️⃣"];
+    const WILD = "🃏";
+    const SCATTER = "💰";
+    const ALL = BASE_SYMBOLS.concat([WILD, SCATTER]);
+    const BET = 10, START_COINS = 100;
+    const CELL_CLASSIC = 108, CELL_FS = 52;
+    const STRIP_CLASSIC = 22, STRIP_FS = 28;
+    const FS_ROWS = 5, FS_COLS = 6, CLASSIC_COLS = 3;
+
     const coinsEl = document.getElementById("coins");
     const spentEl = document.getElementById("spent");
     const earnedEl = document.getElementById("earned");
+    const fsLeftEl = document.getElementById("fsLeft");
+    const fsBadge = document.getElementById("fsBadge");
     const statusEl = document.getElementById("status");
     const spinBtn = document.getElementById("spinBtn");
     const refillBtn = document.getElementById("refillBtn");
+    const cashoutBtn = document.getElementById("cashoutBtn");
+    const muteBtn = document.getElementById("muteBtn");
     const lightsEl = document.getElementById("lights");
     const blockEl = document.getElementById("block");
     const flashEl = document.getElementById("flash");
     const overlayEl = document.getElementById("overlay");
     const winAmountEl = document.getElementById("winAmount");
+    const winTitle = document.getElementById("winTitle");
+    const paylinesEl = document.getElementById("paylines");
+    const reelsWrap = document.getElementById("reelsWrap");
+    const cashModal = document.getElementById("cashModal");
+    const cashText = document.getElementById("cashText");
+    const cashSub = document.getElementById("cashSub");
+    const coinsRain = document.getElementById("coinsRain");
+
     let coins = START_COINS, spent = 0, earned = 0, spinning = false;
-    for (let i = 0; i < 9; i++) {
+    let freeSpins = 0, inFree = false, muted = false, autoFs = false;
+    let audio, bgNode = null, bgGain = null;
+
+    const WIN_TITLES = [
+      ["YOU WIN!!!", "деньги не настоящие, слёзы тоже"],
+      ["IT'S BILLIONS!!!", "жаль, что в этой вселенной"],
+      ["JACKPOT FROM HELL", "дьявол тоже когда-то крутил слоты"],
+      ["ТЫ БОГАТ!!!", "на 12 секунд и в воображении"],
+      ["МОГИЛА ПОЛНАЯ МОНЕТ", "родственники уже делят"],
+      ["WINNER WINNER", "ужин из доширака оплачен кармой"],
+      ["КАЗИНО ПЛАЧЕТ", "ложь. плачешь ты"],
+      ["МУЛЬТИМИЛЛИОНЕР", "пока не закроешь вкладку"],
+      ["СМЕРТЬ ЛЮБИТ ПОБЕДИТЕЛЕЙ", "особенно после фриспинов"],
+      ["ВЫИГРАЛ ВСЁ", "кроме смысла жизни"],
+      ["РИП AND RICH", "эпитафия будет в неоне"],
+      ["СЧЁТ В РАЮ ЗАБЛОКИРОВАН", "тут хотя бы монетки звенят"],
+      ["ТРУПНЫЙ ЖАР ДЖЕКПОТА", "температура счастья: трупная"],
+      ["НАСЛЕДСТВО СЕБЕ", "нотариус — барабан"],
+      ["БОГ УШЁЛ НА ПЕРЕРЫВ", "остался только кассовый аппарат"],
+      ["ПОБЕДА С ПРИВКУСОМ ФОРМАЛИНА", "храни в прохладном месте"],
+      ["ТЫ ВЫИГРАЛ ПОХОРОНЫ", "премиум-пакет, венки за свой счёт"],
+      ["КРЕДИТ ОТ САТАНЫ ОДОБРЕН", "ставка — оставшиеся годы"],
+      ["ДНО ПРОБИТО ВВЕРХ", "это не взлёт, это отскок черепа"],
+      ["КАССА КОНЧИЛАСЬ РАНЬШЕ ТЕБЯ", "поэтому платим фантазией"],
+      ["ИХ БЫЛО МИЛЛИАРД", "как тараканов после тебя"],
+      ["СЧАСТЬЕ КРАТКОСРОЧНО", "как клиническая смерть с бонусом"],
+      ["ВАШ ПРИЗ — ЕЩЁ ОДИН ШАНС", "умереть бедным чуть позже"],
+      ["ОЛИГАРХ МИНУТЫ", "через две снова человек"],
+      ["ДЖЕКПОТ ПОСМЕРТНО", "зачисление на тот свет занимает 3–5 дней"],
+      ["КОСТИ БРОШЕНЫ", "и не все твои"],
+      ["АЛЛИЛУЙЯ, НИЩЕТА", "хор поёт фальшиво, но громко"],
+      ["ВЫИГРЫШ ПРИНЯТ КАК ДОНОР", "органы радости уже ушли"],
+      ["ТЫ ЛЕГЕНДА", "легенды обычно уже мёртвые"],
+      ["ПЛАТИТ ВСЕЛЕННАЯ", "потом вычтет из срока"]
+    ];
+
+    const CASH_LINES = [
+      ["Ты сейчас проснёшься нищим.", "Вывод одобрен в параллельной вселенной, где ты не открывал эту игру."],
+      ["Деньги уже уехали. На такси. Без тебя.", "Кассир сказал «спасибо за донат на гроб»."],
+      ["Продолжай играть. Похороны сами себя не оплатят.", "Номер счёта совпал с номером могилы — совпадение?"],
+      ["Вывод отклонён: у живых слишком высокие комиссии.", "Попробуй после клинической смерти. Или после ещё одного спина."],
+      ["Твои миллиарды конвертировали в опыт унижения.", "Курс: 1 надежда = 0 рублей."],
+      ["Казино оставило чаевые могильщику.", "Ты — статистика. Статистика не выводит."],
+      ["Заявка принята. Исполнитель: энтропия.", "Ожидай перевод в следующем воплощении."],
+      ["Вывести нельзя. Можно только закопать.", "Лопата в комплект не входит, крути дальше."],
+      ["Поздравляем! Ты почти вывел смысл.", "Деньги остались здесь. Как и твоя самооценка."],
+      ["Нищий режим активирован заранее.", "Это не баг, это бизнес-модель вселенной."],
+      ["Банк ответил: «клиент ещё тёплый — рано»." , "Когда остынешь, пришлём смс. Или батюшку."],
+      ["Перевод ушёл туда, откуда не пишут.", "Трекинг: «доставлено червям»."],
+      ["Касса закрыта по случаю твоей жизни.", "Приходи, когда её не будет. Очередь короче."],
+      ["Вывод в обработке до конца времён.", "Времена кончились вчера. Заявка в архиве."],
+      ["Мы вывели тебе урок. Деньги оставили себе.", "Урок бесплатный. Как и твоя будущая пенсия."],
+      ["IBAN совпал с номером патологоанатома.", "Реквизиты верные. Получатель — нет."],
+      ["Сначала доиграй. Потом умри. Потом поговорим.", "В таком порядке скидка на гроб 0%."],
+      ["Средства заморожены. Как ты в 40.", "Разморозка не предусмотрена тарифом «человек»."],
+      ["Ты хотел кэш. Получил кэшбэк кармой.", "Карма в минусе. Как и ты."],
+      ["Выплата наличными невозможна: наличность сгорела в аду.", "Безнал тоже. Ад не любит эквайринг."],
+      ["Оператор вывода повесился. На проводе.", "Связь есть. Денег нет. Поэтично."],
+      ["Заявка отклонена за излишний оптимизм.", "Повтори, когда возненавидишь себя достаточно."],
+      ["Мы отправили деньги твоей бывшей.", "Она купила венок. Не тебе."],
+      ["Лимит вывода: 0. Лимит боли: безлимит.", "Апгрейд пакета не продаём — ты уже в максимальном."],
+      ["Подпись на чеке посмертная. Чернила свежие.", "Можешь крутить, пока сохнут."],
+      ["«Вывести» — это кнопка. Не обещание.", "Обещания мы хороним отдельно, без венков."],
+      ["Твой баланс красивый. Как надгробие.", "Фото на памятник сделаем из скрина выигрыша."],
+      ["Деньги переведены в «опыт». Опыт несъедобен.", "Но его много. Зато хлеб кончился."],
+      ["Комиссия за вывод: твоя гордость.", "Списана целиком. Сдачи не будет."],
+      ["Казино желает тебе долгой игры и короткой жизни.", "В этом порядке ROI лучше."]
+    ];
+
+    const SPIN_LINES = [
+      "Ручка дёрнута. Вселенная смеётся.",
+      "Кости брошены. Не все твои.",
+      "Ещё один спин ближе к эпитафии.",
+      "Барабаны крутятся. Разум — уже нет.",
+      "Ставка принята. Надежда утилизирована.",
+      "Крутим. Молись, если остался кому."
+    ];
+    const FS_SPIN_LINES = [
+      "Бесплатный спин. Бесплатного сыра нет — есть фриспины.",
+      "Даром крутишь. Душой всё равно платишь.",
+      "Фриспин: скидка на гибель 100%.",
+      "Ещё один подарок от дома. Дом не дарит просто так.",
+      "Бесплатно — самое дорогое, что с тобой случалось."
+    ];
+    const LOSE_LINES = [
+      "Пусто. Как обещания казино.",
+      "Почти. Как «я ещё поживу».",
+      "Барабаны сказали нет. Вежливо, но навсегда.",
+      "Ничего. Зато характер закалился и счёт нет.",
+      "Промах. Вселенная ставит на чёрное, ты — на жизнь.",
+      "Пустой спин. Как семейный склеп в праздник."
+    ];
+    const FS_LOSE_LINES = [
+      "256 линий и ни одна не хочет тебя знать.",
+      "Шесть барабанов плюнули хором.",
+      "Фриспин сгорел. Как остальные планы.",
+      "Поле огромное. Выигрыш — микроскопический. Как шанс.",
+      "Линии проверили тебя на вшивость. Нашли."
+    ];
+    const BROKE_LINES = [
+      "Баланс умер раньше тебя — пополни или признай поражение.",
+      "Карманы пустые. Гроб пока тоже, но это временно.",
+      "Деньги кончились. Принцип — ещё нет. Ошибка.",
+      "Ты банкрот в игре, где банкротство — фича."
+    ];
+    const REFILL_LINES = [
+      "Пополнено +100. Долг перед собой вырос.",
+      "+100. Можно ещё немного не признавать дно.",
+      "Доза принята. Следующая будет дороже.",
+      "Пополнение успешно. Выздоровление — нет."
+    ];
+    const ENTER_FS_LINES = [
+      "ФРИСПИНЫ. 6×5, 256 линий. Ставка списывается с души, не с баланса.",
+      "Добро пожаловать в бесплатный ад. Тут просторнее.",
+      "10 спинов без ставки. Счётчик жизней не обнулён.",
+      "Большой стол накрыт. Ты — закуска, не гость."
+    ];
+    const LEAVE_FS_LINES = [
+      "Фриспины кончились. Как и иллюзии.",
+      "Бесплатное горе закончилось. Дальше платное.",
+      "6×5 сложилось обратно в твою обычную жизнь.",
+      "Бонус закрыт. Реальность не даёт ретриггер."
+    ];
+    const RETRIG_LINES = [
+      n => " · горизонталь 7️⃣/💀 +" + n + ". Смерть перенесла встречу",
+      n => " · линия черепов или семёрок +" + n + ". Гроб подождёт",
+      n => " · ровная линия в ад +" + n + ". Это не доброта, это отсрочка",
+      n => " · ещё " + n + ". Максимум три — касса не благотворительность"
+    ];
+    const THREE_FS_LINES = [
+      " · +10 фриспинов в 6×5. Билет в широкий гроб",
+      " · +10 бесплатных. Платить будешь вниманием вселенной",
+      " · три в ряд открыли подвал с 256 линиями",
+      " · бонусная игра. Основная уже была твоя жизнь"
+    ];
+
+    const PAY_CLASSIC = {
+      "7️⃣": {3: 1_000_000_000},
+      "💀": {3: 500},
+      "💎": {3: 80},
+      "⭐": {3: 50},
+      "🔔": {3: 40},
+      "🍀": {3: 35},
+      "🍉": {3: 30},
+      "🍇": {3: 25},
+      "🍊": {3: 20},
+      "🍋": {3: 18},
+      "🍒": {3: 15}
+    };
+
+    const PAY_WAYS = {
+      "7️⃣": {3: 80, 4: 400, 5: 2500, 6: 50000},
+      "💀": {3: 40, 4: 180, 5: 900, 6: 8000},
+      "💎": {3: 25, 4: 100, 5: 400, 6: 2000},
+      "⭐": {3: 18, 4: 70, 5: 250, 6: 1200},
+      "🔔": {3: 14, 4: 50, 5: 180, 6: 800},
+      "🍀": {3: 12, 4: 40, 5: 140, 6: 600},
+      "🍉": {3: 10, 4: 30, 5: 100, 6: 400},
+      "🍇": {3: 8, 4: 24, 5: 80, 6: 300},
+      "🍊": {3: 6, 4: 18, 5: 60, 6: 220},
+      "🍋": {3: 5, 4: 15, 5: 50, 6: 180},
+      "🍒": {3: 4, 4: 12, 5: 40, 6: 150},
+      "💰": {3: 20, 4: 80, 5: 300, 6: 1500}
+    };
+
+    for (let i = 0; i < 12; i++) {
       const d = document.createElement("div");
       d.className = "dot";
       lightsEl.appendChild(d);
     }
-    function fmt(n) { return n.toLocaleString("ru-RU"); }
-    function randSymbol() { return SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]; }
-    function pickResult() {
+
+    function fmt(n) {
+      if (n >= 1e12) return (n/1e12).toFixed(2).replace(".", ",") + " трлн";
+      if (n >= 1e9) return (n/1e9).toFixed(2).replace(".", ",") + " млрд";
+      return Math.round(n).toLocaleString("ru-RU");
+    }
+    function rand(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+    function chance(p) { return Math.random() < p; }
+
+    function weightedSymbol(fs) {
       const roll = Math.random();
-      if (roll < 0.04) return ["7️⃣","7️⃣","7️⃣"];
-      if (roll < 0.28) {
-        const s = SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
-        return [s,s,s];
-      }
-      if (roll < 0.48) {
-        const pair = Math.random() < 0.5 ? "7️⃣" : SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
-        const other = randSymbol();
-        const pos = Math.floor(Math.random()*3);
-        const res = [pair,pair,pair];
-        res[pos] = other;
-        return res;
-      }
-      return [randSymbol(), randSymbol(), randSymbol()];
+      if (roll < (fs ? 0.06 : 0.04)) return WILD;
+      if (roll < (fs ? 0.075 : 0.07)) return SCATTER;
+      if (roll < (fs ? 0.12 : 0.10)) return "7️⃣";
+      if (roll < (fs ? 0.16 : 0.13)) return "💀";
+      return rand(BASE_SYMBOLS);
     }
-    function buildStrip(el) {
-      el.innerHTML = "";
-      const items = [];
-      for (let i = 0; i < REEL_SIZE; i++) items.push(randSymbol());
-      items.forEach(s => {
-        const div = document.createElement("div");
-        div.className = "symbol";
-        div.textContent = s;
-        el.appendChild(div);
-      });
-      return items;
+
+    /* ---------- audio ---------- */
+    function ensureAudio() {
+      if (audio) return audio;
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      audio = new Ctx();
+      return audio;
     }
-    const reels = [0,1,2].map(i => {
-      const el = document.getElementById("reel"+i);
-      return { el, items: buildStrip(el) };
+    function tone(freq, dur, type, vol, at) {
+      if (muted) return;
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      const t = at != null ? at : ctx.currentTime;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type || "square";
+      o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol || 0.08, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.02);
+    }
+    function noiseBurst(dur, vol) {
+      if (muted) return;
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      const n = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+      const d = n.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random()*2-1;
+      const src = ctx.createBufferSource();
+      src.buffer = n;
+      const f = ctx.createBiquadFilter();
+      f.type = "bandpass"; f.frequency.value = 1800;
+      const g = ctx.createGain();
+      g.gain.value = vol || 0.12;
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+      src.connect(f); f.connect(g); g.connect(ctx.destination);
+      src.start();
+    }
+    function sndHandle() {
+      if (muted) return;
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      tone(90, 0.18, "sawtooth", 0.12);
+      tone(140, 0.22, "square", 0.06);
+      noiseBurst(0.12, 0.1);
+      setTimeout(() => { tone(70, 0.15, "sawtooth", 0.1); noiseBurst(0.08, 0.08); }, 90);
+    }
+    function sndSpinLoop() {
+      if (muted) return;
+      tone(180 + Math.random()*80, 0.05, "square", 0.03);
+    }
+    function sndStop() { tone(220, 0.08, "triangle", 0.06); tone(110, 0.1, "sine", 0.04); }
+    function sndCoins() {
+      if (muted) return;
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      for (let i = 0; i < 18; i++) {
+        const t = ctx.currentTime + i * 0.045;
+        tone(700 + Math.random()*500, 0.07, "square", 0.045, t);
+        tone(1200 + Math.random()*400, 0.04, "triangle", 0.03, t + 0.01);
+      }
+    }
+    function sndJackpot() {
+      if (muted) return;
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      for (let i = 0; i < 16; i++) {
+        const t = ctx.currentTime + i * 0.09;
+        tone(300 + (i%8)*70, 0.12, "sawtooth", 0.07, t);
+        tone(600 + (i%5)*90, 0.08, "square", 0.04, t);
+      }
+    }
+    function startBg() {
+      if (muted) return;
+      const ctx = ensureAudio();
+      if (!ctx || bgNode) return;
+      const o1 = ctx.createOscillator();
+      const o2 = ctx.createOscillator();
+      bgGain = ctx.createGain();
+      o1.type = "sine"; o2.type = "triangle";
+      o1.frequency.value = 52; o2.frequency.value = 78;
+      bgGain.gain.value = 0.025;
+      o1.connect(bgGain); o2.connect(bgGain); bgGain.connect(ctx.destination);
+      o1.start(); o2.start();
+      bgNode = { o1, o2 };
+    }
+    function stopBg() {
+      if (!bgNode) return;
+      try { bgNode.o1.stop(); bgNode.o2.stop(); } catch(e) {}
+      bgNode = null;
+    }
+
+    muteBtn.addEventListener("click", async () => {
+      muted = !muted;
+      muteBtn.textContent = muted ? "🔇 тихо" : "🔊 звук";
+      if (muted) stopBg();
+      else {
+        const ctx = ensureAudio();
+        if (ctx && ctx.state === "suspended") await ctx.resume();
+        startBg();
+      }
     });
+
+    /* ---------- reels DOM ---------- */
+    let reels = [];
+    function cellH() { return inFree ? CELL_FS : CELL_CLASSIC; }
+    function stripLen() { return inFree ? STRIP_FS : STRIP_CLASSIC; }
+    function cols() { return inFree ? FS_COLS : CLASSIC_COLS; }
+    function visRows() { return inFree ? FS_ROWS : 1; }
+
+    function buildMachine() {
+      reelsWrap.innerHTML = "";
+      reels = [];
+      const n = cols();
+      const rows = visRows();
+      const h = cellH();
+      const len = stripLen();
+      for (let i = 0; i < n; i++) {
+        const reel = document.createElement("div");
+        reel.className = "reel";
+        const win = document.createElement("div");
+        win.className = "reel-window";
+        const strip = document.createElement("div");
+        strip.className = "strip";
+        const items = [];
+        for (let k = 0; k < len; k++) {
+          const s = weightedSymbol(inFree);
+          items.push(s);
+          const div = document.createElement("div");
+          div.className = "symbol";
+          div.textContent = s;
+          strip.appendChild(div);
+        }
+        win.appendChild(strip);
+        reel.appendChild(win);
+        reelsWrap.appendChild(reel);
+        reels.push({ el: strip, items, col: i });
+      }
+      blockEl.classList.toggle("fs-mode", inFree);
+      paylinesEl.textContent = inFree
+        ? "6×5 · 243 способа + бонусные линии · всего 256 линий"
+        : "3 барабана · ставка 10 · три в ряд открывают ад";
+    }
+
     function setLights(on) {
-      [...lightsEl.children].forEach((d,i) => {
-        d.classList.toggle("on", on && i % 2 === ((Date.now()/80)|0)%2);
+      [...lightsEl.children].forEach((d, i) => {
+        d.classList.toggle("on", on && i % 2 === ((Date.now() / 70) | 0) % 2);
       });
     }
+
     function updateUI() {
       coinsEl.textContent = fmt(coins);
       spentEl.textContent = fmt(spent);
       earnedEl.textContent = fmt(earned);
-      const broke = coins < BET;
-      blockEl.classList.toggle("broke", broke);
+      fsLeftEl.textContent = String(freeSpins);
+      fsBadge.textContent = "Фриспины " + freeSpins;
+      const broke = coins < BET && freeSpins <= 0;
+      blockEl.classList.toggle("broke", broke && !inFree);
       if (broke && !spinning) {
-        statusEl.textContent = "Баланс закончился — пополните, чтобы крутить дальше";
+        statusEl.textContent = rand(BROKE_LINES);
         statusEl.className = "status lose";
         spinBtn.disabled = true;
       } else {
-        spinBtn.disabled = spinning;
+        spinBtn.disabled = spinning || autoFs;
+        spinBtn.textContent = autoFs ? "Авто…" : (freeSpins > 0 ? "Фриспин" : "Крутить");
       }
     }
+
     function refill() {
       coins += START_COINS;
-      statusEl.textContent = "Пополнено +100. Можно крутить";
+      statusEl.textContent = rand(REFILL_LINES);
       statusEl.className = "status win";
       updateUI();
+      sndCoins();
     }
-    function payout(result) {
+
+    /* ---------- pick results ---------- */
+    function pickClassic() {
+      const roll = Math.random();
+      if (roll < 0.035) return ["7️⃣","7️⃣","7️⃣"];
+      if (roll < 0.055) return ["💀","💀","💀"];
+      if (roll < 0.26) {
+        const s = weightedSymbol(false);
+        return [s, s, s];
+      }
+      if (roll < 0.48) {
+        const pair = chance(0.35) ? "7️⃣" : weightedSymbol(false);
+        const res = [pair, pair, pair];
+        res[Math.floor(Math.random()*3)] = weightedSymbol(false);
+        return res;
+      }
+      return [weightedSymbol(false), weightedSymbol(false), weightedSymbol(false)];
+    }
+
+    function pickFreeGrid() {
+      const grid = [];
+      const forceHot = chance(0.14);
+      const hotSym = forceHot ? rand(["💎","⭐","🔔","🍀","🍉"]) : null;
+      for (let c = 0; c < FS_COLS; c++) {
+        const col = [];
+        for (let r = 0; r < FS_ROWS; r++) {
+          if (hotSym && chance(0.22)) col.push(hotSym);
+          else col.push(weightedSymbol(true));
+        }
+        grid.push(col);
+      }
+      return grid;
+    }
+
+    function sameThree(result) {
+      const norm = result.map(s => s === WILD ? null : s);
+      const base = result.find(s => s !== WILD) || WILD;
+      return result.every(s => s === base || s === WILD);
+    }
+
+    function payoutClassic(result) {
       const [a,b,c] = result;
-      if (a==="7️⃣" && b==="7️⃣" && c==="7️⃣") return { mul:1000000000, text:"МЕГАДЖЕКПОТ 7-7-7 ×1 000 000 000", mega:true };
-      if (a===b && b===c) return { mul:25, text:"Три в ряд! ×25", mega:false };
-      const sevens = result.filter(s => s==="7️⃣").length;
-      if (sevens===2) return { mul:5, text:"Две семёрки! ×5", mega:false };
-      if (a===b || b===c || a===c) return { mul:2, text:"Пара! ×2", mega:false };
-      return { mul:0, text:"Почти... ещё спин", mega:false };
+      const wilds = result.filter(s => s === WILD).length;
+      const sevens = result.filter(s => s === "7️⃣" || s === WILD).length;
+      if (result.every(s => s === "7️⃣")) return { mul: 1_000_000_000, text: "МЕГАДЖЕКПОТ 7-7-7 ×1 000 000 000", mega: true, three: true, titleI: 1 };
+      if (result.every(s => s === "💀")) return { mul: 500, text: "Три черепа. Тебе машут с той стороны ×500", mega: true, three: true, titleI: 4 };
+      if (sameThree(result)) {
+        const sym = result.find(s => s !== WILD) || WILD;
+        const table = PAY_CLASSIC[sym];
+        const mul = table ? table[3] : 25;
+        return { mul, text: "Три " + (sym === WILD ? "джокера" : sym) + "! ×" + mul + " + 10 фриспинов", mega: mul >= 80, three: true, titleI: 0 };
+      }
+      if (sevens === 2) return { mul: 5, text: "Две семёрки (или вайлд)! ×5", mega: false, three: false };
+      if (a===b || b===c || a===c) return { mul: 2, text: "Пара. Мало, но лучше чем наследство ×2", mega: false, three: false };
+      if (wilds) return { mul: 1, text: "Вайлд спас лицо. ×1 — ставка вернулась", mega: false, three: false };
+      return { mul: 0, text: rand(LOSE_LINES), mega: false, three: false };
     }
-    function celebrate(win, mega) {
+
+    function evalWays(grid) {
+      const linesHit = [];
+      let totalMul = 0;
+      const symbols = new Set();
+      grid.flat().forEach(s => { if (s !== WILD && s !== SCATTER) symbols.add(s); });
+      symbols.forEach(sym => {
+        let ways = 1, len = 0;
+        for (let c = 0; c < FS_COLS; c++) {
+          const hits = grid[c].filter(s => s === sym || s === WILD).length;
+          if (hits === 0) break;
+          ways *= hits;
+          len++;
+        }
+        if (len >= 3) {
+          const pay = (PAY_WAYS[sym] && PAY_WAYS[sym][len]) || 0;
+          const lineMul = pay * ways;
+          if (pay) {
+            totalMul += lineMul;
+            linesHit.push({ sym, len, ways, pay: lineMul });
+          }
+        }
+      });
+      let scatters = 0;
+      grid.flat().forEach(s => { if (s === SCATTER) scatters++; });
+      if (scatters >= 3) {
+        const pay = PAY_WAYS["💰"][Math.min(6, scatters)] || 20;
+        totalMul += pay;
+        linesHit.push({ sym: "💰", len: scatters, ways: 1, pay });
+      }
+      const approxLines = 243 + (scatters >= 3 ? 13 : 0);
+      return { totalMul, linesHit, scatters, approxLines };
+    }
+
+    function celebrate(win, mega, titlePair) {
+      const pair = titlePair || rand(WIN_TITLES);
+      const dur = mega ? 6800 : 3600;
+      winTitle.innerHTML = pair[0] + "<small id='winAmount'></small>";
+      const small = winTitle.querySelector("small");
+      small.textContent = pair[1] + "   +" + fmt(win);
       document.body.classList.add("jackpot-shake");
       blockEl.classList.add("win-pulse");
       flashEl.classList.add("show");
       overlayEl.classList.add("show");
-      winAmountEl.textContent = "+"+fmt(win);
       [...lightsEl.children].forEach(d => d.classList.add("on"));
-      setTimeout(function(){
+      rainCoins(mega ? 40 : 18);
+      if (mega) sndJackpot(); else sndCoins();
+      setTimeout(() => {
         document.body.classList.remove("jackpot-shake");
         blockEl.classList.remove("win-pulse");
         flashEl.classList.remove("show");
         overlayEl.classList.remove("show");
         [...lightsEl.children].forEach(d => d.classList.remove("on"));
-      }, mega ? 4200 : 1800);
+        coinsRain.classList.remove("show");
+        coinsRain.innerHTML = "";
+      }, dur);
+      return dur;
     }
-    function animateReel(reel, duration, finalSymbol) {
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function extraFsFromHorizontal(grid) {
+      let extra = 0;
+      for (let r = 0; r < FS_ROWS; r++) {
+        const best = Math.max(bestRun(grid, r, "7️⃣"), bestRun(grid, r, "💀"));
+        if (best >= 6) extra += 3;
+        else if (best >= 5) extra += 2;
+        else if (best >= 3) extra += 1;
+      }
+      return Math.min(3, extra);
+    }
+    function bestRun(grid, row, sym) {
+      let run = 0, best = 0;
+      for (let c = 0; c < FS_COLS; c++) {
+        const s = grid[c][row];
+        if (s === sym || s === WILD) { run++; best = Math.max(best, run); }
+        else run = 0;
+      }
+      return best;
+    }
+
+    function rainCoins(n) {
+      coinsRain.innerHTML = "";
+      coinsRain.classList.add("show");
+      for (let i = 0; i < n; i++) {
+        const el = document.createElement("div");
+        el.className = "coin-drop";
+        el.textContent = rand(["💰","🪙","💵","💎","7️⃣"]);
+        el.style.left = Math.random()*100 + "%";
+        el.style.animationDuration = (1.4 + Math.random()*1.6) + "s";
+        el.style.animationDelay = (Math.random()*0.6) + "s";
+        coinsRain.appendChild(el);
+      }
+    }
+
+    function animateReel(reel, duration, finals) {
       return new Promise(resolve => {
-        reel.items = buildStrip(reel.el);
-        reel.items[REEL_SIZE-1] = finalSymbol;
-        reel.el.lastElementChild.textContent = finalSymbol;
+        const h = cellH();
+        const len = stripLen();
+        const rows = visRows();
+        reel.items = [];
+        reel.el.innerHTML = "";
+        for (let k = 0; k < len; k++) {
+          const s = weightedSymbol(inFree);
+          reel.items.push(s);
+          const div = document.createElement("div");
+          div.className = "symbol";
+          div.textContent = s;
+          reel.el.appendChild(div);
+        }
+        const startIndex = len - rows;
+        for (let r = 0; r < rows; r++) {
+          reel.items[startIndex + r] = finals[r];
+          reel.el.children[startIndex + r].textContent = finals[r];
+        }
+        reel.el.style.transform = "translateY(0px)";
         const start = performance.now();
-        const startY = 0;
-        const endY = -(REEL_SIZE-1)*118;
+        const endY = -startIndex * h;
         function frame(now) {
-          const t = Math.min(1, (now-start)/duration);
-          const ease = 1 - Math.pow(1-t, 3);
-          reel.el.style.transform = "translateY("+(startY+(endY-startY)*ease)+"px)";
-          if (t<1) requestAnimationFrame(frame);
-          else resolve(finalSymbol);
+          const t = Math.min(1, (now - start) / duration);
+          const ease = 1 - Math.pow(1 - t, 3);
+          reel.el.style.transform = "translateY(" + (endY * ease) + "px)";
+          if (t < 1) requestAnimationFrame(frame);
+          else resolve(finals);
         }
         requestAnimationFrame(frame);
       });
     }
+
+    function enterFree() {
+      inFree = true;
+      buildMachine();
+      statusEl.textContent = rand(ENTER_FS_LINES);
+      statusEl.className = "status win";
+    }
+    function leaveFree() {
+      inFree = false;
+      buildMachine();
+      statusEl.textContent = rand(LEAVE_FS_LINES);
+      statusEl.className = "status lose";
+    }
+
     async function spin() {
       if (spinning) return;
-      if (coins < BET) { updateUI(); return; }
+      const usingFree = freeSpins > 0;
+      if (!usingFree && coins < BET) { updateUI(); return; }
+
+      const ctx = ensureAudio();
+      if (ctx && ctx.state === "suspended") await ctx.resume();
+      if (!muted && !bgNode) startBg();
+
       spinning = true;
       spinBtn.disabled = true;
-      coins -= BET;
-      spent += BET;
+      let hold = 1600;
+
+      if (usingFree) {
+        freeSpins -= 1;
+        if (!inFree) enterFree();
+      } else {
+        if (inFree) leaveFree();
+        coins -= BET;
+        spent += BET;
+      }
       updateUI();
-      statusEl.textContent = "Крутим...";
+      statusEl.textContent = usingFree ? rand(FS_SPIN_LINES) : rand(SPIN_LINES);
       statusEl.className = "status";
-      const lightTimer = setInterval(function(){ setLights(true); }, 70);
-      const finals = pickResult();
-      const results = await Promise.all(reels.map(function(reel,i){
-        return animateReel(reel, 800+i*280, finals[i]);
-      }));
+      sndHandle();
+
+      const lightTimer = setInterval(() => { setLights(true); sndSpinLoop(); }, 70);
+
+      let classicResult = null;
+      let grid = null;
+      const tasks = reels.map((reel, i) => {
+        const dur = 700 + i * 180;
+        if (inFree) {
+          if (!grid) grid = pickFreeGrid();
+          return animateReel(reel, dur, grid[i]);
+        } else {
+          if (!classicResult) classicResult = pickClassic();
+          return animateReel(reel, dur, [classicResult[i]]);
+        }
+      });
+      await Promise.all(tasks);
       clearInterval(lightTimer);
       setLights(false);
-      const pay = payout(results);
-      if (pay.mul > 0) {
-        const win = BET * pay.mul;
-        coins += win;
-        earned += win;
-        statusEl.textContent = pay.text + "  +" + fmt(win);
-        statusEl.className = "status win";
-        celebrate(win, pay.mega);
+      sndStop();
+
+      if (!inFree) {
+        const pay = payoutClassic(classicResult);
+        if (pay.mul > 0) {
+          const win = BET * pay.mul;
+          coins += win;
+          earned += win;
+          statusEl.textContent = pay.text + "  +" + fmt(win);
+          statusEl.className = "status win";
+          hold = celebrate(win, pay.mega || win >= BET * 25, WIN_TITLES[pay.titleI] || null) + 500;
+        } else {
+          statusEl.textContent = pay.text;
+          statusEl.className = "status lose";
+          hold = 1600;
+        }
+        if (pay.three) {
+          freeSpins += 10;
+          statusEl.textContent += rand(THREE_FS_LINES);
+          hold = Math.max(hold, 2800);
+        }
       } else {
-        statusEl.textContent = pay.text;
-        statusEl.className = "status lose";
+        const ev = evalWays(grid);
+        const win = Math.round(BET * ev.totalMul);
+        if (win > 0) {
+          coins += win;
+          earned += win;
+          const best = ev.linesHit.sort((a,b) => b.pay - a.pay)[0];
+          statusEl.textContent = ev.approxLines + " линий проверено · " + ev.linesHit.length + " сыграли · " +
+            (best ? best.len + "× " + best.sym + " ×" + best.ways + " способов" : "") +
+            "  +" + fmt(win);
+          statusEl.className = "status win";
+          const mega = win >= BET * 80;
+          hold = celebrate(win, mega, mega ? rand(WIN_TITLES) : [rand(WIN_TITLES)[0], ev.linesHit.length + " комбинаций из 256 линий"]) + 400;
+        } else {
+          statusEl.textContent = rand(FS_LOSE_LINES);
+          statusEl.className = "status lose";
+          hold = 2000;
+        }
+        const extra = extraFsFromHorizontal(grid);
+        if (extra > 0) {
+          freeSpins += extra;
+          statusEl.textContent += rand(RETRIG_LINES)(extra);
+          hold = Math.max(hold, 2600);
+        }
       }
       spinning = false;
       updateUI();
+
+      if (freeSpins > 0) {
+        autoFs = true;
+        spinBtn.disabled = true;
+        spinBtn.textContent = "Авто…";
+        await sleep(hold);
+        if (freeSpins > 0 && !spinning) {
+          return spin();
+        }
+        autoFs = false;
+        updateUI();
+      } else {
+        autoFs = false;
+        if (inFree) {
+          await sleep(Math.max(900, Math.min(hold, 1800)));
+          if (freeSpins <= 0 && !spinning) leaveFree();
+        }
+        updateUI();
+      }
     }
+
+    cashoutBtn.addEventListener("click", () => {
+      const line = rand(CASH_LINES);
+      cashText.textContent = line[0];
+      cashSub.textContent = line[1] + "  На «балансе»: " + fmt(coins) + " фантиков.";
+      cashModal.classList.add("show");
+      if (!muted) {
+        tone(80, 0.3, "sawtooth", 0.08);
+        tone(60, 0.4, "sine", 0.06);
+      }
+    });
+    document.getElementById("cashOk").addEventListener("click", () => cashModal.classList.remove("show"));
+    cashModal.addEventListener("click", (e) => { if (e.target === cashModal) cashModal.classList.remove("show"); });
+
     spinBtn.addEventListener("click", spin);
     refillBtn.addEventListener("click", refill);
+
+    document.addEventListener("click", async () => {
+      const ctx = ensureAudio();
+      if (ctx && ctx.state === "suspended") await ctx.resume();
+      if (!muted && !bgNode) startBg();
+    }, { once: true });
+
+    buildMachine();
     updateUI();
   </script>
 </body>

@@ -16,6 +16,11 @@
       --text: #f4efe6;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
     html, body { height: 100%; }
     body {
       min-height: 100vh;
@@ -28,36 +33,35 @@
         var(--bg);
       font-family: "Segoe UI", system-ui, sans-serif;
       color: var(--text);
-      overflow-x: hidden;
-      padding: 10px 0 16px;
+      padding: 8px 8px 16px;
     }
-    body.jackpot-shake { animation: screenShake 0.11s linear infinite; }
+    body.jackpot-shake { animation: screenShake 0.18s linear infinite; }
     @keyframes screenShake {
-      0% { transform: translate(0,0) rotate(0); }
-      20% { transform: translate(-10px,6px) rotate(-1deg); }
-      40% { transform: translate(12px,-8px) rotate(1.2deg); }
-      60% { transform: translate(-8px,-5px) rotate(-0.8deg); }
-      80% { transform: translate(9px,7px) rotate(0.6deg); }
-      100% { transform: translate(0,0) rotate(0); }
+      0% { transform: translate(0,0); }
+      25% { transform: translate(-2px,1px); }
+      50% { transform: translate(2px,-1px); }
+      75% { transform: translate(-1px,1px); }
+      100% { transform: translate(0,0); }
     }
     .slot-block {
-      width: min(520px, 96vw);
+      width: min(520px, 100%);
+      max-width: 100%;
       background: linear-gradient(180deg, #241832 0%, var(--panel) 100%);
       border: 1px solid #3a2f4f;
       border-radius: 22px;
-      padding: 16px 14px 14px;
+      padding: 16px 12px 14px;
       box-shadow: 0 0 0 1px rgba(232,195,106,0.12), 0 24px 50px rgba(0,0,0,0.45);
       position: relative;
       z-index: 2;
       transition: width .35s ease, box-shadow .2s;
     }
     .slot-block.fs-mode {
-      width: min(720px, 98vw);
+      width: min(720px, 100%);
       box-shadow: 0 0 0 2px #7a2cff, 0 0 40px rgba(122,44,255,.35), 0 24px 50px rgba(0,0,0,0.45);
     }
     .slot-block.win-pulse {
-      animation: blockPulse 0.18s linear infinite;
-      box-shadow: 0 0 0 4px #fff, 0 0 40px #ff2bd6, 0 0 80px #ffe14a;
+      animation: blockPulse 0.45s linear infinite;
+      box-shadow: 0 0 0 3px #fff, 0 0 28px #ff2bd6, 0 0 50px #ffe14a;
     }
     @keyframes blockPulse {
       0% { filter: hue-rotate(0deg) saturate(1.4); }
@@ -103,8 +107,11 @@
       color:#7d7393; margin-top:6px; min-height:14px;
     }
     .fs-mode .paylines { color:#e8c36a; }
-    .controls { display:grid; grid-template-columns:1fr auto; gap:8px; margin-top:12px; align-items:center; }
-    .status { min-height:40px; display:flex; align-items:center; font-size:13px; color:#c9c0d8; line-height:1.25; }
+    .controls { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; margin-top:12px; align-items:center; }
+    .status {
+      min-height:40px; display:flex; align-items:center; font-size:13px; color:#c9c0d8;
+      line-height:1.3; overflow-wrap:anywhere; word-break:break-word; min-width:0;
+    }
     .status.win { color:var(--win); font-weight:700; }
     .status.lose { color:#d7cfe4; }
     .btns { display:flex; flex-direction:column; gap:6px; }
@@ -118,21 +125,49 @@
     button.cashout { background:#1c1220; color:#ff8aa0; border:1px solid #5a2838; }
     .broke .spin { display:none; }
     .broke .refill { display:inline-block; }
-    .hint { margin-top:8px; font-size:11px; color:#8b829a; text-align:center; line-height:1.35; }
-    .overlay { position:fixed; inset:0; display:none; place-items:center; z-index:20; pointer-events:none; }
+    .hint { margin-top:8px; font-size:11px; color:#8b829a; text-align:center; line-height:1.35; overflow-wrap:anywhere; }
+    .overlay {
+      position:fixed; inset:0; display:none; place-items:center; z-index:20; pointer-events:none;
+      padding: 16px;
+      width: 100%;
+      max-width: 100vw;
+    }
     .overlay.show { display:grid; }
     .you-win {
-      font-size: clamp(36px, 11vw, 96px); font-weight:900; letter-spacing:.04em;
-      text-transform:uppercase; color:#fff; text-align:center; line-height:.92;
-      text-shadow: 0 0 12px #ff0, 0 0 30px #ff2bd6, 0 0 60px #00e5ff, 4px 4px 0 #000;
-      animation: winPop .18s linear infinite, hue .4s linear infinite;
-      padding: 0 12px;
+      width: min(560px, 100%);
+      max-width: 100%;
+      font-size: clamp(28px, 8.4vw, 56px); font-weight:900; letter-spacing:.03em;
+      text-transform:uppercase; color:#fff; text-align:center; line-height:1.05;
+      text-shadow: 0 0 10px #ff0, 0 0 22px #ff2bd6, 0 0 36px #00e5ff, 3px 3px 0 #000;
+      animation: winPop .55s ease-in-out infinite, hue 1.2s linear infinite;
+      padding: 10px 8px;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
-    .you-win small { display:block; font-size:.26em; margin-top:10px; letter-spacing:.1em; }
+    .you-win .win-sum {
+      display:block;
+      margin-top: 10px;
+      font-size: clamp(32px, 11vw, 72px);
+      line-height: 1.05;
+      letter-spacing: .02em;
+      color: #fff7b0;
+      text-shadow: 0 0 10px #ff0, 0 0 24px #ff2bd6, 3px 3px 0 #000;
+    }
+    .you-win .win-cap {
+      display:block;
+      margin-top: 10px;
+      font-size: clamp(15px, 4.6vw, 22px);
+      font-weight: 800;
+      letter-spacing: .04em;
+      line-height: 1.25;
+      text-transform: none;
+      color: #fff;
+      text-shadow: 0 2px 0 #000, 0 0 12px #000;
+    }
     @keyframes winPop {
-      0% { transform:scale(1) rotate(-4deg); }
-      50% { transform:scale(1.16) rotate(4deg); }
-      100% { transform:scale(1) rotate(-4deg); }
+      0% { transform:scale(1) rotate(-0.6deg); }
+      50% { transform:scale(1.035) rotate(0.6deg); }
+      100% { transform:scale(1) rotate(-0.6deg); }
     }
     @keyframes hue { from { filter:hue-rotate(0); } to { filter:hue-rotate(360deg); } }
     .flash { position:fixed; inset:0; display:none; z-index:10; pointer-events:none; animation:flashBg .1s linear infinite; }
@@ -172,13 +207,36 @@
     @keyframes fall {
       to { transform: translateY(110vh) rotate(540deg); opacity:.2; }
     }
+    @media (max-width: 480px) {
+      .title { letter-spacing: .1em; font-size: 12px; }
+      .header { flex-wrap: wrap; }
+      .fs-mode .reel { height: 210px; }
+      .fs-mode .symbol { height: 42px; font-size: 22px; }
+      .controls { grid-template-columns: 1fr; }
+      .btns { flex-direction: row; flex-wrap: wrap; }
+      .btns button { flex: 1 1 auto; }
+      .status { font-size: 12px; }
+      .stat b { font-size: 13px; }
+      .modal-card p { font-size: 15px; }
+      .modal-card .tiny { font-size: 13px; }
+    }
+    @media (max-width: 360px) {
+      .fs-mode .reel { height: 180px; }
+      .fs-mode .symbol { height: 36px; font-size: 18px; }
+      .symbol { height: 96px; font-size: 42px; }
+      .reel { height: 96px; }
+    }
   </style>
 </head>
 <body>
   <div class="flash" id="flash"></div>
   <div class="coins-rain" id="coinsRain"></div>
   <div class="overlay" id="overlay">
-    <div class="you-win" id="winTitle">YOU WIN!!!<small id="winAmount"></small></div>
+    <div class="you-win" id="winTitle">
+      <div id="winHead">YOU WIN!!!</div>
+      <div class="win-sum" id="winAmount">+0</div>
+      <div class="win-cap" id="winCap"></div>
+    </div>
   </div>
   <div class="modal" id="cashModal">
     <div class="modal-card">
@@ -249,6 +307,8 @@
     const overlayEl = document.getElementById("overlay");
     const winAmountEl = document.getElementById("winAmount");
     const winTitle = document.getElementById("winTitle");
+    const winHead = document.getElementById("winHead");
+    const winCap = document.getElementById("winCap");
     const paylinesEl = document.getElementById("paylines");
     const reelsWrap = document.getElementById("reelsWrap");
     const cashModal = document.getElementById("cashModal");
@@ -552,7 +612,14 @@
 
     /* ---------- reels DOM ---------- */
     let reels = [];
-    function cellH() { return inFree ? CELL_FS : CELL_CLASSIC; }
+    function cellH() {
+      const el = document.querySelector(".symbol");
+      if (el) {
+        const h = el.getBoundingClientRect().height;
+        if (h > 8) return h;
+      }
+      return inFree ? CELL_FS : CELL_CLASSIC;
+    }
     function stripLen() { return inFree ? STRIP_FS : STRIP_CLASSIC; }
     function cols() { return inFree ? FS_COLS : CLASSIC_COLS; }
     function visRows() { return inFree ? FS_ROWS : 1; }
@@ -716,9 +783,9 @@
     function celebrate(win, mega, titlePair) {
       const pair = titlePair || rand(WIN_TITLES);
       const dur = mega ? 6800 : 3600;
-      winTitle.innerHTML = pair[0] + "<small id='winAmount'></small>";
-      const small = winTitle.querySelector("small");
-      small.textContent = pair[1] + "   +" + fmt(win);
+      winHead.textContent = pair[0];
+      winAmountEl.textContent = "+" + fmt(win);
+      winCap.textContent = pair[1];
       document.body.classList.add("jackpot-shake");
       blockEl.classList.add("win-pulse");
       flashEl.classList.add("show");
